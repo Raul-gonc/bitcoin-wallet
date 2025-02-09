@@ -48,6 +48,15 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
+  jwt_secret =
+    System.get_env("JWT_SECRET") ||
+      raise """
+        ❌ ERROR: The JWT_SECRET environment variable is missing.
+        """
+
+  config :bitcoinwallet, Bitcoinwallet.Auth.Guardian,
+    secret_key: jwt_secret
+
   host = System.get_env("PHX_HOST") || "example.com"
   port = String.to_integer(System.get_env("PORT") || "4000")
 

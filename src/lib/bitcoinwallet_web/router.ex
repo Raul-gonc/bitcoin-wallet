@@ -5,8 +5,26 @@ defmodule BitcoinwalletWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :auth do
+    plug Guardian.Plug.Pipeline, module: Bitcoinwallet.Auth.Guardian, error_handler: BitcoinwalletWeb.AuthErrorHandler
+    plug Guardian.Plug.VerifyHeader, scheme: "Bearer"
+  end
+
+
+  # Public routes (no authentication required)
   scope "/api", BitcoinwalletWeb do
     pipe_through :api
+
+    post "/register", AuthController, :register
+    post "/login", AuthController, :login
+    post "/logout", AuthController, :logout
+
+  end
+
+  # Authenticated routes (require JWT token)
+  scope "/api", BitcoinwalletWeb do
+    pipe_through [:api, :auth]
+
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

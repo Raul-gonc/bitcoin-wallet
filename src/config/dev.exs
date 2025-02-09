@@ -2,10 +2,10 @@ import Config
 
 # Configure your database
 config :bitcoinwallet, Bitcoinwallet.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "db",
-  database: "bitcoinwallet_dev",
+  username: System.get_env("POSTGRES_USER") || "postgres",
+  password: System.get_env("POSTGRES_PASSWORD") || "postgres",
+  hostname: System.get_env("POSTGRES_HOST") || "db",
+  database: System.get_env("POSTGRES_DB") || "bitcoinwallet_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
