@@ -11,6 +11,11 @@ config :bitcoinwallet,
   ecto_repos: [Bitcoinwallet.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+# Configures the JWT
+config :bitcoinwallet, Bitcoinwallet.Auth.Guardian,
+  issuer: "Bitcoinwallet",
+  secret_key: System.get_env("JWT_SECRET") || "dev_secret"
+
 # Configures the endpoint
 config :bitcoinwallet, BitcoinwalletWeb.Endpoint,
   url: [host: "localhost"],
