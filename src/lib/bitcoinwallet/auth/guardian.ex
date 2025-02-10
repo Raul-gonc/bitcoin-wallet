@@ -41,12 +41,10 @@ defmodule Bitcoinwallet.Auth.Guardian do
         user_id = claims["sub"]
 
         case Bitcoinwallet.Accounts.get_user!(user_id) do
-          {:ok, user} ->
+          %Bitcoinwallet.Accounts.User{} = user ->
             {:ok, user}
           nil ->
             {:error, "User not found"}
-          _ ->
-            {:error, "Unexpected error"}
         end
 
       {:error, reason} ->

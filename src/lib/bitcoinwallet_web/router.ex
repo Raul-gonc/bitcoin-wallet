@@ -19,12 +19,18 @@ defmodule BitcoinwalletWeb.Router do
     post "/login", AuthController, :login
     post "/logout", AuthController, :logout
 
+    get "/coins", CoinController, :index
+    get "/coins/:symbol", CoinController, :show
   end
 
   # Authenticated routes (require JWT token)
   scope "/api", BitcoinwalletWeb do
     pipe_through [:api, :auth]
 
+    get "/wallet", WalletController, :index
+    post "/wallet/buy", WalletController, :buy
+    post "/wallet/sell", WalletController, :sell
+    get "/wallet/balance", WalletController, :balance
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

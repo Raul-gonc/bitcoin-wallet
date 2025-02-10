@@ -17,12 +17,13 @@ defmodule Bitcoinwallet.Application do
       # Start a worker by calling: Bitcoinwallet.Worker.start_link(arg)
       # {Bitcoinwallet.Worker, arg},
       # Start to serve requests, typically the last entry
-      BitcoinwalletWeb.Endpoint
+      BitcoinwalletWeb.Endpoint,
+      Bitcoinwallet.Supervisor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Bitcoinwallet.Supervisor]
+    opts = [strategy: :one_for_one, name: Bitcoinwallet.Application]
     Supervisor.start_link(children, opts)
   end
 

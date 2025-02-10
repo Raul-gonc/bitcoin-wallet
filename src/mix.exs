@@ -57,7 +57,8 @@ defmodule Bitcoinwallet.MixProject do
       {:joken, "~> 2.0"},
       {:httpoison, "~> 2.0"},
       {:argon2_elixir, "~> 3.0"},
-      {:guardian, "~> 2.0"}
+      {:guardian, "~> 2.0"},
+      {:cachex, "~> 3.4"}
     ]
   end
 
