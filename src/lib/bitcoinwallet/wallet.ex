@@ -43,16 +43,24 @@ defmodule Bitcoinwallet.Wallet do
 
   ## Examples
 
-      iex> create_transaction(%{field: value})
+      iex> create_transaction(user_id, "bitcoin", 0.5, 50000.0)
       {:ok, %Transaction{}}
 
-      iex> create_transaction(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
+      iex> create_transaction(user_id, "bitcoin", -0.5, 50000.0)
+      {:ok, %Transaction{}}
 
   """
-  def create_transaction(attrs \\ %{}) do
+  def create_transaction(user_id, symbol, amount, price) do
+    date_parsed = Date.utc_today()
+
     %Transaction{}
-    |> Transaction.changeset(attrs)
+    |> Transaction.changeset(%{
+      user_id: user_id,
+      symbol: symbol,
+      amount: amount,
+      price: price,
+      date: date_parsed
+    })
     |> Repo.insert()
   end
 
@@ -103,22 +111,7 @@ defmodule Bitcoinwallet.Wallet do
     Transaction.changeset(transaction, attrs)
   end
 
-  def create_transaction(user_id, symbol, amount, price) do
-    # Converte a string de data para o tipo Date
-    date_parsed = Date.utc_today()
-
-    %Transaction{}
-    |> Transaction.changeset(%{
-      user_id: user_id,
-      symbol: symbol,
-      amount: amount,
-      price: price,
-      date: date_parsed
-    })
-    |> Repo.insert()
-  end
-
-   # Lists all transactions for a user
+  # Lists all transactions for a user
    def list_transactions_by_user(user_id) do
     query = from t in Transaction, where: t.user_id == ^user_id
     Repo.all(query)
@@ -141,6 +134,17 @@ defmodule Bitcoinwallet.Wallet do
             group_by: t.symbol,
             select: %{symbol: t.symbol, total: sum(t.amount)}
     Repo.all(query)
+  end
+
+  # Checks if user can sell the specified amount of cryptocurrency
+  def can_sell?(user_id, symbol, amount) do
+    balance = calculate_balance(user_id)
+    
+    case Enum.find(balance, fn b -> b.symbol == symbol end) do
+      nil -> {:error, "You don't own this cryptocurrency"}
+      %{total: total} when total >= amount -> {:ok, total}
+      _ -> {:error, "Insufficient balance"}
+    end
   end
 
   # Calculates the user's total profit/loss
