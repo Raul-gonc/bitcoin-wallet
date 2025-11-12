@@ -6,15 +6,24 @@ defmodule Bitcoinwallet.CoinAPI do
 
   # Busca lista de criptomoedas, utilizando cache
   def get_coins do
-    case Cachex.get(:crypto_cache, @cache_key) do
-      {:ok, nil} -> fetch_and_cache_coins()
-      {:ok, :no_cache} -> fetch_and_cache_coins()
-      {:ok, %{timestamp: timestamp, data: data}} ->
-        if is_expired?(timestamp) do
-          fetch_and_cache_coins()
-        else
-          {:ok, data}  # Retorna do cache
-        end
+    case Cachex.fetch(:crypto_cache, @cache_key, fn _key ->
+      url = "#{@base_url}/coins/markets?vs_currency=usd"
+      Logger.info("Fetching coins from API: #{url}")
+      
+      case HTTPoison.get(url) |> handle_response() do
+        {:ok, data} ->
+          timestamp = System.system_time(:second)
+          {:commit, %{timestamp: timestamp, data: data}, ttl: :timer.seconds(@cache_expiry)}
+        error ->
+          Logger.error("Failed to fetch coins: #{inspect(error)}")
+          {:ignore, error}
+      end
+    end) do
+      {:ok, %{data: data}} -> {:ok, data}
+      {:commit, %{data: data}} -> {:ok, data}
+      {:commit, %{data: data}, _opts} -> {:ok, data}
+      {:error, reason} -> {:error, reason}
+      error -> error
     end
   end
 
@@ -27,27 +36,18 @@ defmodule Bitcoinwallet.CoinAPI do
     end
   end
 
-  # Obtém os dados da API e armazena no cache
-  defp fetch_and_cache_coins do
-    url = "#{@base_url}/coins/markets?vs_currency=usd"
-    IO.inspect(url, label: "api acessada:")
-    case HTTPoison.get(url) |> handle_response() do
-      {:ok, data} ->
-        timestamp = System.system_time(:second)
-        Cachex.put(:crypto_cache, @cache_key, %{timestamp: timestamp, data: data})
-        {:ok, data}
 
-      error -> error
-    end
-  end
 
   # Busca uma moeda específica do cache
   defp fetch_coin_from_cache(symbol) do
     case get_coins() do
       {:ok, coins} ->
         case Enum.find(coins, fn coin -> coin["id"] == symbol end) do
-          nil -> {:error, "Moeda não encontrada no cache"}
-          coin -> {:ok, coin}
+          nil -> 
+            Logger.warning("Coin not found in cache: #{symbol}")
+            {:error, "Coin not found in cache"}
+          coin -> 
+            {:ok, coin}
         end
 
       error -> error
@@ -58,15 +58,10 @@ defmodule Bitcoinwallet.CoinAPI do
   defp fetch_coin_from_api(symbol, date) do
     url = "#{@base_url}/coins/#{symbol}/history?date=#{date}"
 
-    Logger.info("🔍 Chamando API para histórico: #{url}")
+    Logger.info("Fetching coin history from API: #{url}")
 
     HTTPoison.get(url)
     |> handle_response()
-  end
-
-  # Verifica se o cache expirou
-  defp is_expired?(timestamp) do
-    System.system_time(:second) - timestamp > @cache_expiry
   end
 
   # Trata resposta da API
