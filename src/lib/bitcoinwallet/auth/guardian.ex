@@ -21,7 +21,6 @@ defmodule Bitcoinwallet.Auth.Guardian do
     end
   end
 
-  # Generates a JWT token for the user
   def token_for_user(user) do
     case Bitcoinwallet.Auth.Guardian.encode_and_sign(user) do
       {:ok, token, _claims} ->
@@ -31,7 +30,6 @@ defmodule Bitcoinwallet.Auth.Guardian do
     end
   end
 
-  # Validates the JWT token and returns the associated user
   def get_user_from_token(token) do
     case Bitcoinwallet.Auth.Guardian.decode_and_verify(token) do
       {:ok, claims} ->

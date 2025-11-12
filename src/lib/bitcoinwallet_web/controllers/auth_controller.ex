@@ -4,7 +4,6 @@ defmodule BitcoinwalletWeb.AuthController do
   alias Bitcoinwallet.Accounts
   alias Bitcoinwallet.Auth.Guardian
 
-  # Registers a new user
   def register(conn, %{"email" => email, "password" => password}) do
     with {:ok, _email} <- validate_email(email),
          {:ok, _password} <- validate_password(password),
@@ -36,7 +35,6 @@ defmodule BitcoinwalletWeb.AuthController do
       else: {:error, :weak_password}
   end
 
-  # Authenticates a user and generates a JWT token
   def login(conn, %{"email" => email, "password" => password}) do
     case Accounts.get_user_by_email(email) do
       nil ->
@@ -68,8 +66,6 @@ defmodule BitcoinwalletWeb.AuthController do
     end
   end
 
-
-  # Logs out the user (placeholder implementation)
   def logout(conn, _params) do
     conn |> json(%{message: "Logged out"})
   end

@@ -4,7 +4,6 @@ defmodule BitcoinwalletWeb.WalletController do
   alias Bitcoinwallet.Wallet
   alias Guardian.Plug
 
-  # Fetches the user's wallet transactions
   def index(conn, _params) do
     user = Plug.current_resource(conn)
     Logger.debug("Fetching transactions for user: #{user.id}")
@@ -12,7 +11,6 @@ defmodule BitcoinwalletWeb.WalletController do
     conn |> json(transactions)
   end
 
-  # Adds a buy transaction to the wallet
   def buy(conn, %{"symbol" => symbol, "amount" => amount}) do
     user = Plug.current_resource(conn)
 
@@ -28,7 +26,6 @@ defmodule BitcoinwalletWeb.WalletController do
     end
   end
 
-  # Adds a sell transaction to the wallet
   def sell(conn, %{"symbol" => symbol, "amount" => amount}) do
     user = Plug.current_resource(conn)
     
@@ -50,12 +47,10 @@ defmodule BitcoinwalletWeb.WalletController do
     end
   end
 
-  # Calculates the user's wallet balance
   def balance(conn, _params) do
     user = Plug.current_resource(conn)
     balance = Wallet.calculate_balance(user.id)
 
-    # Fetch all prices at once to avoid N+1 queries
     symbols = Enum.map(balance, & &1.symbol)
     
     prices_result = Enum.reduce_while(symbols, {:ok, %{}}, fn symbol, {:ok, acc} ->

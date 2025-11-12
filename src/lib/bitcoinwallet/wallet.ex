@@ -111,13 +111,11 @@ defmodule Bitcoinwallet.Wallet do
     Transaction.changeset(transaction, attrs)
   end
 
-  # Lists all transactions for a user
-   def list_transactions_by_user(user_id) do
+  def list_transactions_by_user(user_id) do
     query = from t in Transaction, where: t.user_id == ^user_id
     Repo.all(query)
   end
 
-  # Lists transactions within a specific period
   def list_transactions_in_period(user_id, start_date, end_date) do
     {:ok, start_date_parsed} = parse_date(start_date)
     {:ok, end_date_parsed} = parse_date(end_date)
@@ -127,7 +125,6 @@ defmodule Bitcoinwallet.Wallet do
     Repo.all(query)
   end
 
-  # Calculates the user's wallet balance
   def calculate_balance(user_id) do
     query = from t in Transaction,
             where: t.user_id == ^user_id,
@@ -136,7 +133,6 @@ defmodule Bitcoinwallet.Wallet do
     Repo.all(query)
   end
 
-  # Checks if user can sell the specified amount of cryptocurrency
   def can_sell?(user_id, symbol, amount) do
     balance = calculate_balance(user_id)
     
@@ -147,7 +143,6 @@ defmodule Bitcoinwallet.Wallet do
     end
   end
 
-  # Calculates the user's total profit/loss
   def calculate_profit(user_id) do
     query = from t in Transaction, where: t.user_id == ^user_id, select: sum(t.amount * t.price)
     Repo.one(query) || 0.0
@@ -156,7 +151,6 @@ defmodule Bitcoinwallet.Wallet do
   defp parse_date(date_string) do
     case String.split(date_string, ["-", "/"]) do
       [day, month, year] ->
-        # Converte para o formato Date
         Date.new(String.to_integer(year), String.to_integer(month), String.to_integer(day))
       _ ->
         {:error, "Invalid date format. Use dd-mm-yyyy or dd/mm/yyyy"}

@@ -1,10 +1,9 @@
 defmodule Bitcoinwallet.CoinAPI do
   require Logger
   @base_url "https://api.coingecko.com/api/v3"
-  @cache_expiry 600  # Seconds
+  @cache_expiry 600
   @cache_key :crypto_list
 
-  # Fetches cryptocurrency list using cache
   def get_coins do
     case Cachex.fetch(:crypto_cache, @cache_key, fn _key ->
       url = "#{@base_url}/coins/markets?vs_currency=usd"
@@ -27,7 +26,6 @@ defmodule Bitcoinwallet.CoinAPI do
     end
   end
 
-  # Fetches coin details (from cache or API if date is provided)
   def get_coin(symbol, date \\ nil) do
     if date do
       fetch_coin_from_api(symbol, date)
@@ -36,9 +34,6 @@ defmodule Bitcoinwallet.CoinAPI do
     end
   end
 
-
-
-  # Fetches a specific coin from cache
   defp fetch_coin_from_cache(symbol) do
     case get_coins() do
       {:ok, coins} ->
@@ -54,7 +49,6 @@ defmodule Bitcoinwallet.CoinAPI do
     end
   end
 
-  # Fetches a coin directly from API when date is provided
   defp fetch_coin_from_api(symbol, date) do
     url = "#{@base_url}/coins/#{symbol}/history?date=#{date}"
 
@@ -64,7 +58,6 @@ defmodule Bitcoinwallet.CoinAPI do
     |> handle_response()
   end
 
-  # Handles API response
   defp handle_response({:ok, %{status_code: 200, body: body}}) do
     {:ok, Jason.decode!(body)}
   end

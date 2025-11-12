@@ -8,7 +8,6 @@ defmodule Bitcoinwallet.WalletFixtures do
   Generate a transaction.
   """
   def transaction_fixture(attrs \\ %{}) do
-    # Ensure we have a valid user_id
     user = Bitcoinwallet.AccountsFixtures.user_fixture()
     
     {:ok, transaction} =
