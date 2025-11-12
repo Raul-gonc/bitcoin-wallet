@@ -11,8 +11,8 @@ defmodule Bitcoinwallet.AccountsFixtures do
     {:ok, user} =
       attrs
       |> Enum.into(%{
-        email: "some email",
-        password_hash: "some password_hash"
+        email: "user#{System.unique_integer([:positive])}@example.com",
+        password: "SecurePassword123!"
       })
       |> Bitcoinwallet.Accounts.create_user()
 
