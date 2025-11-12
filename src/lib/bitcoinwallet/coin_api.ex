@@ -1,10 +1,10 @@
 defmodule Bitcoinwallet.CoinAPI do
   require Logger
   @base_url "https://api.coingecko.com/api/v3"
-  @cache_expiry 600  # Segundos
+  @cache_expiry 600  # Seconds
   @cache_key :crypto_list
 
-  # Busca lista de criptomoedas, utilizando cache
+  # Fetches cryptocurrency list using cache
   def get_coins do
     case Cachex.fetch(:crypto_cache, @cache_key, fn _key ->
       url = "#{@base_url}/coins/markets?vs_currency=usd"
@@ -27,7 +27,7 @@ defmodule Bitcoinwallet.CoinAPI do
     end
   end
 
-  # Busca detalhes de uma moeda (do cache ou API se data for fornecida)
+  # Fetches coin details (from cache or API if date is provided)
   def get_coin(symbol, date \\ nil) do
     if date do
       fetch_coin_from_api(symbol, date)
@@ -38,7 +38,7 @@ defmodule Bitcoinwallet.CoinAPI do
 
 
 
-  # Busca uma moeda específica do cache
+  # Fetches a specific coin from cache
   defp fetch_coin_from_cache(symbol) do
     case get_coins() do
       {:ok, coins} ->
@@ -54,7 +54,7 @@ defmodule Bitcoinwallet.CoinAPI do
     end
   end
 
-  # Busca uma moeda diretamente da API quando uma data é fornecida
+  # Fetches a coin directly from API when date is provided
   defp fetch_coin_from_api(symbol, date) do
     url = "#{@base_url}/coins/#{symbol}/history?date=#{date}"
 
@@ -64,13 +64,13 @@ defmodule Bitcoinwallet.CoinAPI do
     |> handle_response()
   end
 
-  # Trata resposta da API
+  # Handles API response
   defp handle_response({:ok, %{status_code: 200, body: body}}) do
     {:ok, Jason.decode!(body)}
   end
 
   defp handle_response({:ok, %{status_code: status_code}}) do
-    {:error, "API retornou status #{status_code}"}
+    {:error, "API returned status #{status_code}"}
   end
 
   defp handle_response({:error, reason}) do
