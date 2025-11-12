@@ -8,6 +8,7 @@ defmodule BitcoinwalletWeb.Router do
   pipeline :auth do
     plug Guardian.Plug.Pipeline, module: Bitcoinwallet.Auth.Guardian, error_handler: BitcoinwalletWeb.AuthErrorHandler
     plug Guardian.Plug.VerifyHeader, scheme: "Bearer"
+    plug Guardian.Plug.LoadResource, allow_blank: false
   end
 
 
