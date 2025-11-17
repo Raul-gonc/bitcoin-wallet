@@ -6,27 +6,23 @@ defmodule Bitcoinwallet.Auth.Guardian do
   end
 
   def resource_from_claims(claims) do
-    IO.inspect(claims, label: "Claims recebidas:")
+    require Logger
+    Logger.debug("Processing claims for user authentication")
+    
     case claims["sub"] do
       nil -> {:error, :not_found}
       user_id ->
-        IO.inspect(user_id, label: "User id extraído das claims:")
         case Bitcoinwallet.Accounts.get_user!(user_id) do
           nil -> {:error, :not_found}
           user ->
-            IO.inspect(user, label: "Usuário recuperado do banco de dados:")
+            Logger.debug("User #{user.id} authenticated successfully")
             {:ok, user}
         end
     end
   end
 
-  # Generates a JWT token for the user
   def token_for_user(user) do
-    claims = %{
-      "sub" => user.id,
-    }
-
-    case Bitcoinwallet.Auth.Guardian.encode_and_sign(user, claims) do
+    case Bitcoinwallet.Auth.Guardian.encode_and_sign(user) do
       {:ok, token, _claims} ->
         {:ok, token}
       {:error, reason} ->
@@ -34,7 +30,6 @@ defmodule Bitcoinwallet.Auth.Guardian do
     end
   end
 
-  # Validates the JWT token and returns the associated user
   def get_user_from_token(token) do
     case Bitcoinwallet.Auth.Guardian.decode_and_verify(token) do
       {:ok, claims} ->
